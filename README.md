@@ -1,3 +1,5 @@
+# AMI class is from <https://github.com/ctiapps/asterisk>
+
 # asterisk
 
 TODO: Write a description here
