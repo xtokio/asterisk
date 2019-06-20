@@ -2,16 +2,23 @@
 
 # asterisk
 
-TODO: Write a description here
+Basic Asterisk wrapper of the AMI and some console commands to interact with an Asterisk server
 
 ## Installation
 
-TODO: Write installation instructions here
+Add this to your application's `shard.yml`:
+
+```yaml
+dependencies:
+  asterisk:
+    github: xtokio/asterisk
+```
 
 ## Usage
 
-TODO: Write usage instructions here
-
+```crystal
+require "asterisk"
+```
 ## Development
 
 TODO: Write development instructions here
