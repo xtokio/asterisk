@@ -13,7 +13,7 @@ module Asterisk
       Asterisk.logger
     end
 
-    def initialize(@host = "127.0.0.1", @port = "5038", @username = "", @secret = "", @should_reconnect = true)
+    def initialize(@host = "127.0.0.1", @port = "5038", @username = "", @secret = "")
       @conn = TCPSocket.new
       @connected = true
     end
@@ -67,10 +67,6 @@ module Asterisk
 
     def connected?
       @connected
-    end
-
-    def should_reconnect?
-      @should_reconnect
     end
 
     def send_action(action)
