@@ -2,10 +2,10 @@ module Asterisk
   extend self
 
     def make_call(connection,channel,conference_number)
-      host = connection.host
-      port = connection.port
-      username = connection.username
-      secret = connection.secret
+      host = connection["host"]
+      port = connection["port"]
+      username = connection["username"]
+      secret = connection["secret"]
 
       ami = Asterisk::AMI.new(host, port, username, secret, reconnect)
       ami.connect!
