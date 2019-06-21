@@ -7,7 +7,7 @@ module Asterisk
       username = connection["username"]
       secret = connection["secret"]
 
-      ami = Asterisk::AMI.new(host, port, username, secret, reconnect)
+      ami = Asterisk::AMI.new(host, port, username, secret)
       ami.connect!
       ami.send_action({"Action" => "Originate","Channel" => channel,"Timeout" => "30000", "CallerID" => "Asterisk", "Application" => "ConfBridge", "Async" => "true", "Data" => conference_number})
       ami.disconnect!
