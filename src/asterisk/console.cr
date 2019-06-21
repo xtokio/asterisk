@@ -1,5 +1,5 @@
 module Asterisk
-  class Console
+  extend self
 
     def call_id(exten)
       command = "asterisk -rx \"sip show channels\" | awk '{print \"|\"$2\"|\" $3}' | head | grep #{exten} | sed 's/|#{exten}|//g'"
@@ -11,7 +11,5 @@ module Asterisk
       Process.run(command, shell: true, output: io)
       io.to_s
     end
-
-  end
 
 end
