@@ -29,14 +29,19 @@ module Asterisk
       if call_id.blank?
         active = false
       else
-        channel_details = get_channel_details(call_id)
-        channel = channel_details.split("\n")
-        channel.each do |line|
-          if line.split(":").first.strip == "Owner channel ID"
-            if line.split(":").last.strip[0] == '<'
-              active = false
-            else
-              active = true
+        call_id_array = call_id.split("\n")
+        if call_id_array.size > 1
+          active = true
+        else
+          channel_details = get_channel_details(call_id)
+          channel = channel_details.split("\n")
+          channel.each do |line|
+            if line.split(":").first.strip == "Owner channel ID"
+              if line.split(":").last.strip[0] == '<'
+                active = false
+              else
+                active = true
+              end
             end
           end
         end
