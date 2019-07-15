@@ -1,13 +1,13 @@
 require "../src/asterisk.cr"
 
-host = "192.168.56.101"
-port = "5038"
-username = "admin"
-secret = "V88Tig1"
+host = ""
+port = ""
+username = ""
+secret = ""
 reconnect = false
 
 puts "############# Call Starts! #######################"
-ami = Asterisk::AMI.new(host, port, username, secret, reconnect)
+ami = Asterisk::AMI.new(host, port, username, secret)
 ami.connect!
 
 # puts ami.send_action({"action" => "ListCommands"})
