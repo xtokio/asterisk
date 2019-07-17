@@ -77,7 +77,25 @@ module Asterisk
       actionid = action["actionid"] ||= Random::Secure.hex(8)
       
       send_action! action
-      receive_event
+
+      # Capture and return events from the Asterisk server
+      events = Hash(String, String).new
+
+      event1 = receive_event
+      event2 = receive_event
+      event3 = receive_event
+
+      if !event1.nil?
+        events.merge!(event1)
+      end
+      if !event2.nil?
+        events.merge!(event2)
+      end
+      if !event3.nil?
+        events.merge!(event3)
+      end
+
+      {"events" => events}
     end
 
     private def send_action!(action)
@@ -130,13 +148,6 @@ module Asterisk
           # logger.debug "Processing line: #{line}"
           if /^(.*):(.*)$/ =~ line
             result[$1.to_s.downcase] = $2.to_s.strip
-            # Validates a hangup cause code to exit
-            if $1.to_s.downcase == "cause"
-              @connected = false
-              puts "########################## Found Cause : #{$2.to_s.strip} #############"
-              disconnect!
-              # exit
-            end
           else
             result["unknown"] ||= ""
             result["unknown"] += line

@@ -1,33 +1,32 @@
 require "../src/asterisk.cr"
 
-host = ""
-port = ""
-username = ""
-secret = ""
-reconnect = false
+host = ENV["ASTERISKCR_AMI_HOST"]
+port = ENV["ASTERISKCR_AMI_PORT"]
+username = ENV["ASTERISKCR_AMI_USERNAME"]
+secret = ENV["ASTERISKCR_AMI_SECRET"]
+
+connection = {"host" => host, "port" => port, "username" => username, "secret" => secret}
+
+channel_100 = "SIP/100"
+channel_101 = "SIP/101"
+conference_number = "100"
+extension = "101"
+
+events_channel_100 = Asterisk.call_conference(connection,channel_100,conference_number)
+events_channel_101 = Asterisk.call_conference(connection,channel_101,conference_number)
+
+sleep 5
+status = Asterisk.extension_state(connection,extension)
+puts status
 
 puts "############# Call Starts! #######################"
-ami = Asterisk::AMI.new(host, port, username, secret)
-ami.connect!
 
-# puts ami.send_action({"action" => "ListCommands"})
-# puts ami.send_action({"action" => "SIPpeers"})
-# puts ami.send_action({"action" => "Command", "command" => "agi show commands"})
+sleep 10
+Asterisk.mute(connection,status["events"]["channel"],conference_number)
+puts "Mute"
 
-# ami.send_action({"Action" => "Originate","Channel" => "SIP/100","Context" => "ConferenceRooms", "Exten" => "666", "Priority" => "1", "Variable" => "numberToDial=virtualbox/100"})
+sleep 10
+Asterisk.unmute(connection,status["events"]["channel"],conference_number)
+puts "UnMute"
 
-# Action: Originate
-# ActionID: CreateConf
-# Channel: SIP/1000
-# Timeout: 30000
-# CallerID: Asterisk
-# Application: ConfBridge
-# Async: true
-# Data: 1234
-
-ami.send_action({"Action" => "Originate","Channel" => "SIP/100","Timeout" => "30000", "CallerID" => "Asterisk", "Application" => "ConfBridge", "Async" => "true", "Data" => "1234"})
-# puts ami.call_id("100")
-
-ami.disconnect!
 puts "############# Call After disconnect! #######################"
-
