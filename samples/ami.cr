@@ -15,18 +15,24 @@ extension = "101"
 events_channel_100 = Asterisk.call_conference(connection,channel_100,conference_number)
 events_channel_101 = Asterisk.call_conference(connection,channel_101,conference_number)
 
+# gets channel id
+channel = events_channel_101["events"]["channel"]
+
 sleep 5
-status = Asterisk.extension_state(connection,extension)
-puts status
+channel_state = Asterisk.extension_state(connection,extension)
+puts channel_state
+
+channel_status = Asterisk.channel_status(connection,channel)
+puts channel_status
 
 puts "############# Call Starts! #######################"
 
 sleep 10
-Asterisk.mute(connection,status["events"]["channel"],conference_number)
+Asterisk.mute(connection,channel,conference_number)
 puts "Mute"
 
 sleep 10
-Asterisk.unmute(connection,status["events"]["channel"],conference_number)
+Asterisk.unmute(connection,channel,conference_number)
 puts "UnMute"
 
 puts "############# Call After disconnect! #######################"
