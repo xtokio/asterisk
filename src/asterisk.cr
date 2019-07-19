@@ -80,7 +80,7 @@ module Asterisk
   end
 
   def active_call(extension)
-    command_call_id = "asterisk -rx\"sip show channels\" | grep '#{extension}' -w | awk '{print $3}'"
+    command_call_id = "asterisk -rx\"sip show channels\" | grep '#{extension}' -w | awk 'NR==1{print $3}'"
     call_id = execute_command(command_call_id)
     # Validate if not empty
     command_channel = "asterisk -rx\"sip show channel #{call_id}\" | grep 'Owner channel ID:' -w | awk '{print $4}'"
