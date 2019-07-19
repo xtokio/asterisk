@@ -69,7 +69,7 @@ module Asterisk
       @connected
     end
 
-    def send_action(action)
+    def send_action(action,event="")
       raise LoginError.new("Action should present") unless action.has_key?("Action")
       raise LoginError.new("AMI should be in connected state to send Action") unless connected?
 
@@ -83,7 +83,24 @@ module Asterisk
 
       event1 = receive_event
       event2 = receive_event
-      event3 = receive_event
+      # event3 = receive_event
+      # event4 = receive_event
+      # event5 = receive_event
+
+      puts "Event 1"
+      puts event1
+
+      puts "Event 2"
+      puts event2
+
+      # puts "Event 3"
+      # puts event3
+
+      # puts "Event 4"
+      # puts event4
+
+      # puts "Event 5"
+      # puts event5
 
       if !event1.nil?
         events.merge!(event1)
@@ -91,8 +108,33 @@ module Asterisk
       if !event2.nil?
         events.merge!(event2)
       end
-      if !event3.nil?
-        events.merge!(event3)
+      # if !event3.nil?
+      #   events.merge!(event3)
+      # end
+      # if !event4.nil?
+      #   events.merge!(event4)
+      # end
+      # if !event5.nil?
+      #   events.merge!(event5)
+      # end
+
+      if event != ""
+        search_event = Hash(String, String).new
+        found = false
+        while !found
+          search_event = receive_event
+          if !search_event.nil?
+            puts "Search Event: #{search_event["event"]} | #{event}"
+            
+            if search_event["event"] == event
+              events.merge!(search_event)
+              found = true
+            end
+
+          end
+
+        end
+          
       end
 
       {"events" => events}

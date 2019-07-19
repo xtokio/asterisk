@@ -12,6 +12,20 @@ module Asterisk
     events
   end
 
+  def conference_list(connection,conference_number)
+    ami = connect(connection)
+    ami.connect!
+    events = ami.send_action({"Action" => "ConfbridgeList","Conference" => conference_number},"ConfbridgeListComplete")
+    
+    status = {"status" => "Inactive", "list" => "0"}
+    if events["events"]["listitems"]?
+      status["status"] = "Active"
+      status["list"] = events["events"]["listitems"]
+    end
+
+    status
+  end
+
   def mute(connection,channel,conference_number)
     ami = connect(connection)
     ami.connect!
@@ -39,7 +53,7 @@ module Asterisk
   def extension_state(connection,extension)
     ami = connect(connection)
     ami.connect!
-    events = ami.send_action({"Action" => "ExtensionState","Exten" => extension})
+    events = ami.send_action({"Action" => "ExtensionState","Exten" => extension},"PeerStatus")
 
     status = {"status" => "Inactive", "channel" => ""}
     if events["events"]["channel"]?
@@ -52,9 +66,27 @@ module Asterisk
   def channel_status(connection,channel)
     ami = connect(connection)
     ami.connect!
-    events = ami.send_action({"Action" => "Status","Channel" => channel})
+    events = ami.send_action({"Action" => "Status","Channel" => channel},"StatusComplete")
     
     events
+  end
+
+  def sip_peers(connection)
+    ami = connect(connection)
+    ami.connect!
+    events = ami.send_action({"Action" => "SIPpeers"},"PeerlistComplete")
+    
+    events
+  end
+
+  def active_call(extension)
+    command_call_id = "asterisk -rx\"sip show channels\" | grep '#{extension}' -w | awk '{print $3}'"
+    call_id = execute_command(command_call_id)
+    # Validate if not empty
+    command_channel = "asterisk -rx\"sip show channel #{call_id}\" | grep 'Owner channel ID:' -w | awk '{print $4}'"
+    channel = execute_command(command_channel)
+    # Validate if not empty
+    {"status"=>"OK","call_id"=>call_id,"channel"=>channel}
   end
 
   private def execute_command(command)
