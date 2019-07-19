@@ -90,6 +90,10 @@ module Asterisk
     if call_id != ""
       command_channel = "asterisk -rx\"sip show channel #{call_id}\" | grep 'Owner channel ID:' -w | awk '{print $4}'"
       channel = execute_command(command_channel).chomp
+      
+      if channel == "" || channel == "<none>"
+        status = "error"
+      end
     else
       status = "error"
     end
