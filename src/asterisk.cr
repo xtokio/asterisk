@@ -80,13 +80,18 @@ module Asterisk
   end
 
   def active_call(extension)
+    status = "OK"
     command_call_id = "asterisk -rx\"sip show channels\" | grep '#{extension}' -w | awk 'NR==1{print $3}'"
-    call_id = execute_command(command_call_id)
+    call_id = execute_command(command_call_id).chomp
     # Validate if not empty
-    command_channel = "asterisk -rx\"sip show channel #{call_id}\" | grep 'Owner channel ID:' -w | awk '{print $4}'"
-    channel = execute_command(command_channel)
+    if call_id != ""
+      command_channel = "asterisk -rx\"sip show channel #{call_id}\" | grep 'Owner channel ID:' -w | awk '{print $4}'"
+      channel = execute_command(command_channel).chomp
+    else
+      status = "error"
+    end
     # Validate if not empty
-    {"status"=>"OK","call_id"=>call_id,"channel"=>channel}
+    {"status"=>"#{status}","call_id"=>call_id,"channel"=>channel}
   end
 
   private def execute_command(command)
