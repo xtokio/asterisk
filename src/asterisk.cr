@@ -81,6 +81,9 @@ module Asterisk
 
   def active_call(extension)
     status = "OK"
+    call_id = ""
+    channel = ""
+
     command_call_id = "asterisk -rx\"sip show channels\" | grep '#{extension}' -w | awk 'NR==1{print $3}'"
     call_id = execute_command(command_call_id).chomp
     # Validate if not empty
@@ -90,7 +93,7 @@ module Asterisk
     else
       status = "error"
     end
-    # Validate if not empty
+    
     {"status"=>"#{status}","call_id"=>call_id,"channel"=>channel}
   end
 
