@@ -1,8 +1,8 @@
 require "../src/asterisk.cr"
 
 host = ENV["ASTERISKCR_ARI_HOST"]
-events_url = ASTERISKCR_ARI_EVENTS_URL
-ari_app = ASTERISKCR_ARI_APP 
+events_url = ENV["ASTERISKCR_ARI_EVENTS_URL"]
+ari_app = ENV["ASTERISKCR_ARI_APP"]
 username = ENV["ASTERISKCR_ARI_USERNAME"]
 secret = ENV["ASTERISKCR_ARI_SECRET"]
 
