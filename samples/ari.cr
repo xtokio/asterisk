@@ -1,10 +1,10 @@
 require "../src/asterisk.cr"
 
-host = ENV["ASTERISKCR_ARI_HOST"]
-events_url = ENV["ASTERISKCR_ARI_EVENTS_URL"]
-ari_app = ENV["ASTERISKCR_ARI_APP"]
-username = ENV["ASTERISKCR_ARI_USERNAME"]
-secret = ENV["ASTERISKCR_ARI_SECRET"]
+host = "http://localhost:8088"
+events_url = "/ari/events"
+ari_app = "ari_app"
+username = "admin"
+secret = "supersecret"
 
 events = Asterisk::ARIEvents.new(host,events_url,username,secret,ari_app)
 
@@ -32,6 +32,15 @@ puts channel_to_bridge
 param_moh = ari.block do
   channel_moh = ari.channel_moh(channel_new["id"])
   puts channel_moh
+
+  sleep 5
+  channel_remove_moh = ari.channel_remove_moh(channel_new["id"])
+  puts channel_remove_moh
+
+  sleep 1
+  channel_play = ari.channel_play(channel_new["id"],"sound:tt-monkeys")
+  puts channel_play
+  # sound:tt-monkeys
 end
 
 ari.disconnect

@@ -146,6 +146,30 @@ module Asterisk
       {"code"=>code,"message"=>json}
     end
 
+    # Removes Music on hold from channel
+    def channel_remove_moh(channel_id)
+      response = @client.delete("/ari/channels/#{channel_id}/moh")
+      code = response.status_code
+      json = response.body
+      if json == ""
+        json = "Music on Hold Removed"
+      end
+
+      {"code"=>code,"message"=>json}
+    end
+
+    # Plays media on channel
+    def channel_play(channel_id,media)
+      response = @client.post("/ari/channels/#{channel_id}/play?media=#{media}")
+      code = response.status_code
+      json = response.body
+      if json == ""
+        json = "Media #{media} was played"
+      end
+
+      {"code"=>code,"message"=>json}
+    end
+
     # Add channel to bridge
     def bridge_add_channel(bridge_id,channel_id)
       response = @client.post("/ari/bridges/#{bridge_id}/addChannel?channel=#{channel_id}")

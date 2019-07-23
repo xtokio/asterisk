@@ -57,6 +57,7 @@ module Asterisk
         channel: {type: AriJsonChannel, nilable: true},
         connected: {type: AriJsonConnected, nilable: true},
         accountcode: {type: AriJsonAccountcode, nilable: true},
+        playback: {type: AriJsonPlayback, nilable: true},
         asterisk_id: String,
         application: String
       )
@@ -74,6 +75,25 @@ module Asterisk
       )
     end
 
+    class AriJsonPlayback
+      JSON.mapping(
+        id: String,
+        media_uri: String,
+        target_uri: String,
+        language: String,
+        state: String
+      )
+    end
+
+    class AriJsonPlay
+      JSON.mapping(
+        type: String,
+        playback: {type: AriJsonPlayback, nilable: true},
+        asterisk_id: String,
+        application: String
+      )
+    end
+
     def initialize(@host = "http://localhost:8088",@events_url = "", @username = "", @secret = "", @ari_app = "")      
       @ws = HTTP::WebSocket.new(URI.parse("#{@host}#{@events_url}?api_key=#{@username}:#{@secret}&app=#{@ari_app}"))
     end
@@ -84,32 +104,44 @@ module Asterisk
         @ws.on_message do |message|
           # Ok, we got the message
           if !message.nil?
-            json_ws = AriJson.from_json(message)
-            puts json_ws.type
-            if json_ws.type != "Dial"
-              channel = AriJsonChannel.from_json(json_ws.channel.to_json)
-              puts channel.id
-              puts channel.name
-              puts channel.state
+            message_type = JSON.parse(message)["type"]
+            custom_json = {"type"=> message_type, "id"=>"", "name"=>"", "state"=>""}
+
+            if message_type != "Dial"
+              if message_type == "PlaybackStarted" || message_type == "PlaybackFinished"
+                message_json = AriJsonPlay.from_json(message)
+                message_playback = AriJsonPlayback.from_json(message_json.playback.to_json)
+                custom_json["id"] = message_playback.id
+                custom_json["name"] = "Play"
+                custom_json["state"] = message_playback.state
+              else
+                message_json = AriJson.from_json(message)
+                channel = AriJsonChannel.from_json(message_json.channel.to_json)
+                custom_json["id"] = channel.id
+                custom_json["name"] = channel.name
+                custom_json["state"] = channel.state
+              end
             end
 
-            if json_ws.type == event
+            puts "============================================= Message ================================================="
+            puts message
+            puts custom_json
+
+            if message_type == event
               if event_type == "channel"
-                channel = AriJsonChannel.from_json(json_ws.channel.to_json)
-                if channel.id == event_id && channel.state == event_value
+                if custom_json["id"] == event_id && custom_json["state"] == event_value
                   puts "**************************** Event '#{event}' for event id #{event_id} detected ***********************************"
                   puts "Event value: #{event_value}"
                   block.call
                 end
-              end
-                         
+              end        
             end
 
-            if json_ws.type == "StasisEnd"
+            if message_type == "StasisEnd"
               # ws.close
             end
           end
-          puts message
+          # puts message
         end
         @ws.run
       end

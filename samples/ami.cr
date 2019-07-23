@@ -1,9 +1,9 @@
 require "../src/asterisk.cr"
 
-host = ENV["ASTERISKCR_AMI_HOST"]
-port = ENV["ASTERISKCR_AMI_PORT"]
-username = ENV["ASTERISKCR_AMI_USERNAME"]
-secret = ENV["ASTERISKCR_AMI_SECRET"]
+host = "127.0.0.1"
+port = "5038"
+username = "admin"
+secret = "supersecret"
 
 connection = {"host" => host, "port" => port, "username" => username, "secret" => secret}
 
