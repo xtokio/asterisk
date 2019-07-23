@@ -188,7 +188,7 @@ module Asterisk
       else
         event.each do |line|
           # logger.debug "Processing line: #{line}"
-          if /^(.*):(.*)$/ =~ line
+          if line =~ /(\S+): (.+)/
             result[$1.to_s.downcase] = $2.to_s.strip
           else
             result["unknown"] ||= ""

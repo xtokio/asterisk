@@ -12,7 +12,8 @@ channel_101 = "SIP/101"
 conference_number = "100"
 extension = "101"
 
-# events_channel_100 = Asterisk.call_conference(connection,channel_100,conference_number)
+puts "############# Call Starts! #######################"
+events_channel_100 = Asterisk.call_conference(connection,channel_100,conference_number)
 # events_channel_101 = Asterisk.call_conference(connection,channel_101,conference_number)
 
 # # gets channel id
@@ -21,20 +22,20 @@ sip_peers = Asterisk.sip_peers(connection)
 puts "************************* SIP PEERS *************************"
 puts sip_peers
 
-active = Asterisk.active_call(extension)
-puts active
-# sleep 5
-# channel_state = Asterisk.extension_state(connection,extension)
-# puts "************************* Channel State Asterisk *************************"
-# puts channel_state
+# Gets active call status using Asterisk cli means it only works when run inside the Asterisk server
+# active = Asterisk.active_call(extension)
+# puts active
+
+sleep 5
+channel_state = Asterisk.extension_state(connection,extension)
+puts "************************* Channel State Asterisk *************************"
+puts channel_state
 
 # channel = channel_state["channel"]
 
 # channel_status = Asterisk.channel_status(connection,channel)
 # puts "************************* Channel Status Asterisk *************************"
 # puts channel_status
-
-puts "############# Call Starts! #######################"
 
 # sleep 5
 # Asterisk.mute(connection,channel,conference_number)
