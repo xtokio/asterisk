@@ -40,7 +40,11 @@ param_moh = ari.block do
   sleep 1
   channel_play = ari.channel_play(channel_new["id"],"sound:tt-monkeys")
   puts channel_play
-  # sound:tt-monkeys
+  
+  sleep 3
+  channel_hangup = ari.channel_hangup(channel_new["id"])
+  puts channel_hangup
+
 end
 
 ari.disconnect

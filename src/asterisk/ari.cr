@@ -123,6 +123,17 @@ module Asterisk
       response
     end
 
+    # Hangup a channel id
+    def channel_hangup(channel_id)
+      response = @client.delete("/ari/channels/#{channel_id}")
+      code = response.status_code
+      json = response.body
+      if json == ""
+        json = "Hangup"
+      end
+      {"code"=>code, "id"=>channel_id, "message"=>json}
+    end
+
     # Dials a channel id
     def channel_dial(channel_id)
       response = @client.post("/ari/channels/#{channel_id}/dial")
