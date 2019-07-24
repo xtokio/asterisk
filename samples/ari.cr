@@ -15,7 +15,7 @@ bridge_new = ari.bridge_new
 puts bridge_new
 
 # Creates a new channel
-channel_new = ari.channel_new("SIP/100","ari_app")
+channel_new = ari.channel_new("SIP/101","ari_app")
 puts channel_new
 puts channel_new["id"]
 
@@ -29,27 +29,34 @@ channel_to_bridge = ari.bridge_add_channel(bridge_new["id"],channel_new["id"])
 puts channel_to_bridge
 
 # Example block to execute on an Event change
-param_moh = ari.block do
+channel_101_answer_block = ari.block do
   channel_moh = ari.channel_moh(channel_new["id"])
   puts channel_moh
 
-  sleep 5
-  channel_remove_moh = ari.channel_remove_moh(channel_new["id"])
-  puts channel_remove_moh
+  # sleep 1
+  # channel_play = ari.channel_play(channel_new["id"],"sound:tt-monkeys")
+  # puts channel_play
 
-  sleep 1
-  channel_play = ari.channel_play(channel_new["id"],"sound:tt-monkeys")
-  puts channel_play
-  
-  sleep 3
-  channel_hangup = ari.channel_hangup(channel_new["id"])
-  puts channel_hangup
+  channel_new_100 = ari.channel_new("SIP/100","ari_app")
+  channel_dial_100 = ari.channel_dial(channel_new_100["id"])
+  channel_to_bridge_100 = ari.bridge_add_channel(bridge_new["id"],channel_new_100["id"])
+
+  channel_100_answer_block = ari.block do
+    channel_remove_moh = ari.channel_remove_moh(channel_new["id"])
+    puts channel_remove_moh
+  end
+
+  # Listen for specific event to act upon executing custom block code
+  events.register("ChannelStateChange","channel",channel_new_100["id"],"Up",&channel_100_answer_block)
+
+  # channel_hangup = ari.channel_hangup(channel_new["id"])
+  # puts channel_hangup
 
 end
 
 ari.disconnect
 
 # Listen for specific event to act upon executing custom block code
-events.register("ChannelStateChange","channel",channel_new["id"],"Up",&param_moh)
+events.register("ChannelStateChange","channel",channel_new["id"],"Up",&channel_101_answer_block)
 
 sleep

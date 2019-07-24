@@ -174,8 +174,8 @@ module Asterisk
       response = @client.post("/ari/channels/#{channel_id}/play?media=#{media}")
       code = response.status_code
       json = response.body
-      if json == ""
-        json = "Media #{media} was played"
+      if code = 201
+        json = "Media #{media} was queued"
       end
 
       {"code"=>code,"message"=>json}

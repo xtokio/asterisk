@@ -98,7 +98,7 @@ module Asterisk
       @ws = HTTP::WebSocket.new(URI.parse("#{@host}#{@events_url}?api_key=#{@username}:#{@secret}&app=#{@ari_app}"))
     end
 
-    def register(event,event_type,event_id,event_value,&block)
+    def register(event,event_type,event_id,event_state,&block)
 
       spawn do
         @ws.on_message do |message|
@@ -129,9 +129,9 @@ module Asterisk
 
             if message_type == event
               if event_type == "channel"
-                if custom_json["id"] == event_id && custom_json["state"] == event_value
+                if custom_json["id"] == event_id && custom_json["state"] == event_state
                   puts "**************************** Event '#{event}' for event id #{event_id} detected ***********************************"
-                  puts "Event value: #{event_value}"
+                  puts "Event state: #{event_state}"
                   block.call
                 end
               end        
