@@ -104,6 +104,17 @@ module Asterisk
       }
     end
 
+    # Removes a bridge
+    def bridge_hangup(bridge_id)
+      response = @client.delete("/ari/bridges/#{bridge_id}")
+      code = response.status_code
+      json = response.body
+      if json == ""
+        json = "Bridge hangup"
+      end
+      {"code"=>code, "id"=>bridge_id, "message"=>json}
+    end
+
     # Creates a new channel
     def channel_new(endpoint,ari_app)
       client_response = @client.post("/ari/channels/create?endpoint=#{endpoint}&app=#{ari_app}")
@@ -129,7 +140,7 @@ module Asterisk
       code = response.status_code
       json = response.body
       if json == ""
-        json = "Hangup"
+        json = "Channel hangup"
       end
       {"code"=>code, "id"=>channel_id, "message"=>json}
     end
