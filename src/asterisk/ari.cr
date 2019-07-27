@@ -115,7 +115,11 @@ module Asterisk
     def bridge_details(bridge_id)
       client_response = @client.get("/ari/bridges/#{bridge_id}")
       code = client_response.status_code
-      json_bridge = AriJsonBrigde.from_json(client_response.body)
+      if client_response.body.includes?("message")
+        json_bridge = AriJsonMessage.from_json(client_response.body)
+      else
+        json_bridge = AriJsonBrigde.from_json(client_response.body)
+      end
       json_bridge
     end
 
