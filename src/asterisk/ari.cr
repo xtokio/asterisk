@@ -14,6 +14,12 @@ module Asterisk
       Asterisk.logger
     end
 
+    class AriJsonMessage
+      JSON.mapping(
+        message: String
+      )
+    end
+
     class AriJsonDialplan
       JSON.mapping(
         context: String,
@@ -141,6 +147,19 @@ module Asterisk
       end
 
       response
+    end
+
+    # Channel details
+    def channel_details(channel_id)
+      response = @client.get("/ari/channels/#{channel_id}")
+      code = response.status_code
+      channel_json = response.body
+      if response.body.includes?("message")
+        channel_json = AriJsonMessage.from_json(response.body)
+      else
+        channel_json = AriJsonChannel.from_json(response.body)
+      end
+      channel_json
     end
 
     # Hangup a channel id
