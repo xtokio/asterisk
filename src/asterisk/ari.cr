@@ -42,7 +42,7 @@ module Asterisk
         number: String
       )
     end
-    
+
     class AriJsonChannel
       JSON.mapping(
         id: String,
@@ -72,6 +72,7 @@ module Asterisk
         bridge_class: String,
         creator: String,
         name: String,
+        channels: Array(String),
         video_mode: String
       )
     end
@@ -102,6 +103,14 @@ module Asterisk
         "creator"=>json.creator, "name"=>json.name, 
         "video_mode"=>json.video_mode
       }
+    end
+
+    # Gets Bridge details
+    def bridge_details(bridge_id)
+      client_response = @client.get("/ari/bridges/#{bridge_id}")
+      code = client_response.status_code
+      json_bridge = AriJsonBrigde.from_json(client_response.body)
+      json_bridge
     end
 
     # Removes a bridge
