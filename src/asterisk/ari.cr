@@ -282,8 +282,7 @@ module Asterisk
         ws_asterisk = HTTP::WebSocket.new(URI.parse("#{@websocket_host}/ari/events?api_key=#{@username}:#{@secret}&app=#{@ari_app}"))
         ws_asterisk.on_message do |message|
           @channel_message.send message
-          # puts "============================================= Websocket Message ================================================="
-          # puts message
+          logger.debug "======== Websocket Message =========\n#{message}"
         end
         ws_asterisk.run
       end
