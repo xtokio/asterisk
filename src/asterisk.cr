@@ -66,6 +66,31 @@ module Asterisk
     response
   end
 
+  def phone_login(exten)
+    response = {"status"=>"", "bridge"=>"", "channel"=>"", "message"=>""}
+    ari = connect()
+    # Creates a new bridge
+    bridge_new = ari.bridge_new
+    response["bridge"] = bridge_new["id"]
+    
+    # Creates a new channel
+    channel_new = ari.channel_new(exten,"ari_app")
+    response["channel"] = channel_new["id"].to_s
+
+    # Dials that channel
+    channel_dial = ari.channel_dial(channel_new["id"])
+    response["status"] = channel_dial["status"].to_s
+    response["message"] = channel_dial["message"].to_s
+
+    if channel_dial["status"] == "OK"
+      # Adds channel to bridge
+      channel_to_bridge = ari.bridge_add_channel(bridge_new["id"],channel_new["id"])
+    end
+
+    ari.disconnect()
+    response
+  end
+
   def connect
     Asterisk::ARI.new(@@host,@@websocket_host,@@ari_app,@@username,@@secret)
   end

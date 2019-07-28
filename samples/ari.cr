@@ -18,3 +18,6 @@ if channel_available["status"] == "OK"
   puts add_channel
   # puts "New channel added: #{add_channel["channel"]}"
 end
+
+phone_login = Asterisk.phone_login("SIP/101")
+puts phone_login
