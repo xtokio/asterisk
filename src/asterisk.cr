@@ -3,117 +3,71 @@ require "./asterisk/*"
 
 module Asterisk
   extend self
+  @@host = ""
+  @@websocket_host = ""
+  @@ari_app = ""
+  @@username = ""
+  @@secret = ""
 
-  def call_conference(connection,channel,conference_number)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "Originate","Channel" => channel,"Timeout" => "30000", "CallerID" => "Asterisk", "Application" => "ConfBridge", "Async" => "true", "Data" => conference_number})
-    
-    events
+  def credentials(param_host="",param_websocket_host="",param_ari_app="",param_username="",param_secret="")
+    @@host = param_host
+    @@websocket_host = param_websocket_host
+    @@ari_app = param_ari_app
+    @@username = param_username
+    @@secret = param_secret
   end
 
-  def conference_list(connection,conference_number)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "ConfbridgeList","Conference" => conference_number},"ConfbridgeListComplete")
-    
-    status = {"status" => "Inactive", "list" => "0"}
-    if events["events"]["listitems"]?
-      status["status"] = "Active"
-      status["list"] = events["events"]["listitems"]
-    end
-
-    status
-  end
-
-  def mute(connection,channel,conference_number)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "ConfbridgeMute","Conference" => conference_number,"Channel" => channel})
-    
-    events
-  end
-
-  def unmute(connection,channel,conference_number)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "ConfbridgeUnmute","Conference" => conference_number,"Channel" => channel})
-    
-    events
-  end
-
-  def hangup(connection,channel)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "Hangup","Channel" => channel})
-
-    events
-  end
-
-  def extension_state(connection,extension)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "ExtensionState","Exten" => extension},"PeerStatus")
-
-    status = {"status" => "Inactive", "channel" => ""}
-    if events["events"]["channel"]?
-      status = {"status" => "Active", "channel" => events["events"]["channel"]}
-    end
-
-    status
-  end
-
-  def channel_status(connection,channel)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "Status","Channel" => channel},"StatusComplete")
-    
-    events
-  end
-
-  def sip_peers(connection)
-    ami = connect(connection)
-    ami.connect!
-    events = ami.send_action({"Action" => "SIPpeers"},"PeerlistComplete")
-    
-    events
-  end
-
-  def active_call(extension)
-    status = "OK"
-    call_id = ""
-    channel = ""
-
-    command_call_id = "asterisk -rx\"sip show channels\" | grep '#{extension}' -w | awk 'NR==1{print $3}'"
-    call_id = execute_command(command_call_id).chomp
-    # Validate if not empty
-    if call_id != ""
-      command_channel = "asterisk -rx\"sip show channel #{call_id}\" | grep 'Owner channel ID:' -w | awk '{print $4}'"
-      channel = execute_command(command_channel).chomp
-      
-      if channel == "" || channel == "<none>"
-        status = "error"
-      end
+  def channel_available(bridge_id,channel_id)
+    response = {"status"=>"OK","message"=>""}
+    ari = connect()
+    bridge_details = ari.bridge_details(bridge_id)
+    bridge_details = JSON.parse(bridge_details.to_json)
+    if bridge_details["message"]?
+      response["status"] = "error" 
+      response["message"] = bridge_details["message"].to_s
     else
-      status = "error"
+      channel_details = ari.channel_details(channel_id)
+      channel_details = JSON.parse(channel_details.to_json)
+      if channel_details["message"]?
+        response["status"] = "error" 
+        response["message"] = channel_details["message"].to_s
+      else
+        if channel_details["state"] == "Up" && bridge_details["channels"].size == 1
+          response["message"] = "Channel is available"
+        else
+          response["status"] = "error" 
+          response["message"] = "Channel is unavailable"
+        end
+      end
     end
-    
-    {"status"=>"#{status}","call_id"=>call_id,"channel"=>channel}
+    ari.disconnect()
+    response
   end
 
-  private def execute_command(command)
-    io = IO::Memory.new 
-    Process.run(command, shell: true, output: io)
-    io.to_s
+  def add_channel_to_bridge(exten,bridge_id)
+    response = {"status"=>"","channel"=>"", "message"=>""}
+    ari = connect()
+    # Creates a new channel
+    channel_new = ari.channel_new(exten,"ari_app")
+    response["channel"] = channel_new["id"].to_s
+
+    # Dials that channel
+    channel_dial = ari.channel_dial(channel_new["id"])
+    response["status"] = channel_dial["status"].to_s
+    response["message"] = channel_dial["message"].to_s
+
+    if channel_dial["status"] == "OK"
+      # Adds channel to bridge
+      channel_to_bridge = ari.bridge_add_channel(bridge_id,channel_new["id"])
+    end
+
+    ari.disconnect()
+
+    response
   end
 
-  private def connect(connection)
-    host = connection["host"]
-    port = connection["port"]
-    username = connection["username"]
-    secret = connection["secret"]
-
-    Asterisk::AMI.new(host, port, username, secret)
+  def connect
+    Asterisk::ARI.new(@@host,@@websocket_host,@@ari_app,@@username,@@secret)
   end
 
 end

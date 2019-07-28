@@ -83,14 +83,32 @@ module Asterisk
       )
     end
 
-    def initialize(@host = "http://localhost:8088", @username = "", @secret = "")
+    class AriJsonPlayback
+      JSON.mapping(
+        id: String,
+        media_uri: String,
+        target_uri: String,
+        language: String,
+        state: String
+      )
+    end
+
+    class AriJsonPlay
+      JSON.mapping(
+        type: String,
+        playback: {type: AriJsonPlayback, nilable: true},
+        asterisk_id: String,
+        application: String
+      )
+    end
+
+    def initialize(@host = "http://localhost:8088", @websocket_host = "ws://localhost:8088", @ari_app = "", @username = "", @secret = "")
       uri = URI.parse(@host)
       @client = HTTP::Client.new(uri)
       @client.basic_auth(@username,@secret)
-    end
 
-    def block(&block)
-      block
+      @channel_message = Channel(String).new
+      start_websocket()
     end
 
     # Creates a new bridge
@@ -179,13 +197,35 @@ module Asterisk
 
     # Dials a channel id
     def channel_dial(channel_id)
-      response = @client.post("/ari/channels/#{channel_id}/dial")
-      code = response.status_code
-      json = response.body
-      if json == ""
-        json = "Dialed"
+      response = {"status"=>"", "code"=>"", "channel"=>channel_id, "message"=>""}
+      response_client = @client.post("/ari/channels/#{channel_id}/dial")
+      code = response_client.status_code
+      response_body = response_client.body
+      response["code"] = code.to_s
+      if response_body == ""
+        response["message"] = "Dialed"
       end
-      {"code"=>code, "id"=>channel_id, "message"=>json}
+      
+      while true
+        message = JSON.parse(@channel_message.receive)
+        if message["type"] == "Dial"
+          # Handle Busy / Hangup status
+          if message["peer"]["id"] == channel_id && message["dialstatus"] == "BUSY"
+            response["status"] = "error"
+            response["message"] = "Client didn't answer"
+            break
+          end
+
+          # Handle Answer
+          if message["peer"]["id"] == channel_id && message["dialstatus"] == "ANSWER"
+            response["status"] = "OK"
+            response["message"] = "Client answer"
+            break
+          end
+        end
+      end
+
+      response
     end
 
     # Puts channel on hold
@@ -234,6 +274,19 @@ module Asterisk
       end
 
       {"code"=>code,"message"=>json}
+    end
+
+    def start_websocket
+      spawn do
+        # Run websocket to get events from Asterisk
+        ws_asterisk = HTTP::WebSocket.new(URI.parse("#{@websocket_host}/ari/events?api_key=#{@username}:#{@secret}&app=#{@ari_app}"))
+        ws_asterisk.on_message do |message|
+          @channel_message.send message
+          # puts "============================================= Websocket Message ================================================="
+          # puts message
+        end
+        ws_asterisk.run
+      end
     end
 
     def disconnect
