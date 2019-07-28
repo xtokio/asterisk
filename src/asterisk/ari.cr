@@ -196,9 +196,9 @@ module Asterisk
     end
 
     # Dials a channel id
-    def channel_dial(channel_id)
+    def channel_dial(channel_id,timeout=10)
       response = {"status"=>"", "code"=>"", "channel"=>channel_id, "message"=>""}
-      response_client = @client.post("/ari/channels/#{channel_id}/dial")
+      response_client = @client.post("/ari/channels/#{channel_id}/dial?timeout=#{timeout}")
       code = response_client.status_code
       response_body = response_client.body
       response["code"] = code.to_s
@@ -209,6 +209,7 @@ module Asterisk
       while true
         message = JSON.parse(@channel_message.receive)
         if message["type"] == "Dial"
+
           # Handle Busy / Hangup status
           if message["peer"]["id"] == channel_id && message["dialstatus"] == "BUSY"
             response["status"] = "error"
@@ -223,6 +224,14 @@ module Asterisk
             break
           end
         end
+
+        # Handle call timeout when nobody answers default timeout is 10 seconds
+        if message["type"] == "ChannelDestroyed" && message["channel"]["id"] == channel_id
+          response["status"] = "error"
+          response["message"] = "Call wasn't pick up"
+          break
+        end
+
       end
 
       response
