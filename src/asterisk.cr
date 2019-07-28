@@ -71,8 +71,8 @@ module Asterisk
     ari = connect()
     # Creates a new bridge
     bridge_new = ari.bridge_new
-    response["bridge"] = bridge_new["id"]
-    
+    response["bridge"] = bridge_new["id"].to_s
+
     # Creates a new channel
     channel_new = ari.channel_new(exten,"ari_app")
     response["channel"] = channel_new["id"].to_s
@@ -85,6 +85,7 @@ module Asterisk
     if channel_dial["status"] == "OK"
       # Adds channel to bridge
       channel_to_bridge = ari.bridge_add_channel(bridge_new["id"],channel_new["id"])
+      channel_play = ari.channel_play(channel_new["id"],"sound:confbridge-only-participant") #tt-monkeys
     end
 
     ari.disconnect()
