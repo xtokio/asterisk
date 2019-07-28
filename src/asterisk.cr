@@ -92,6 +92,16 @@ module Asterisk
     response
   end
 
+  def phone_logout(bridge_id,channel_id)
+    response = {"status"=>"OK", "message"=>"Phone logout"}
+    ari = connect()
+    channel_response = ari.channel_hangup(channel_id)
+    bridge_response = ari.bridge_hangup(bridge_id)
+
+    ari.disconnect()
+    response
+  end
+
   def connect
     Asterisk::ARI.new(@@host,@@websocket_host,@@ari_app,@@username,@@secret)
   end
