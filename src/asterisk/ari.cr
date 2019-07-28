@@ -196,7 +196,7 @@ module Asterisk
     end
 
     # Dials a channel id
-    def channel_dial(channel_id,timeout=10)
+    def channel_dial(channel_id,timeout=30)
       response = {"status"=>"", "code"=>"", "channel"=>channel_id, "message"=>""}
       response_client = @client.post("/ari/channels/#{channel_id}/dial?timeout=#{timeout}")
       code = response_client.status_code
