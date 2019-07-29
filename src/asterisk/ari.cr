@@ -108,7 +108,12 @@ module Asterisk
       @client.basic_auth(@username,@secret)
 
       @channel_message = Channel(String).new
+      @ws_asterisk = HTTP::WebSocket.new(URI.parse("#{@websocket_host}/ari/events?api_key=#{@username}:#{@secret}&app=#{@ari_app}"))      
       start_websocket()
+    end
+
+    def channel_message
+      @channel_message
     end
 
     # Creates a new bridge
@@ -288,17 +293,17 @@ module Asterisk
     def start_websocket
       spawn do
         # Run websocket to get events from Asterisk
-        ws_asterisk = HTTP::WebSocket.new(URI.parse("#{@websocket_host}/ari/events?api_key=#{@username}:#{@secret}&app=#{@ari_app}"))
-        ws_asterisk.on_message do |message|
+        @ws_asterisk.on_message do |message|
           @channel_message.send message
           logger.debug "======== Websocket Message =========\n#{message}"
         end
-        ws_asterisk.run
+        @ws_asterisk.run
       end
     end
 
     def disconnect
       @client.close
+      @ws_asterisk.close
     end
 
   end
