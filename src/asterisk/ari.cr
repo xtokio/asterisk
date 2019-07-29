@@ -108,7 +108,7 @@ module Asterisk
       @client.basic_auth(@username,@secret)
 
       @channel_message = Channel(String).new
-      @ws_asterisk = HTTP::WebSocket.new(URI.parse("#{@websocket_host}/ari/events?api_key=#{@username}:#{@secret}&app=#{@ari_app}"))      
+      @ws_asterisk = HTTP::WebSocket.new(URI.parse("#{@websocket_host}"))
       start_websocket()
     end
 
