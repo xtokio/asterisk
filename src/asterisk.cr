@@ -58,6 +58,15 @@ module Asterisk
     response
   end
 
+  def channel_hangup(channel_id)
+    response = {"status"=>"OK", "message"=>"Channel hangup"}
+    ari = connect()
+    channel_response = ari.channel_hangup(channel_id)
+
+    ari.disconnect()
+    response
+  end
+
   def add_channel_to_bridge(channel_id,bridge_id)
     response = {"status"=>"","channel"=>"", "message"=>""}
     ari = connect()
