@@ -43,22 +43,33 @@ module Asterisk
     ari.disconnect()
     response
   end
-
-  def add_channel_to_bridge(exten,bridge_id)
+  
+  def create_new_channel(exten,ari_app="ari_app")
     response = {"status"=>"","channel"=>"", "message"=>""}
     ari = connect()
+
     # Creates a new channel
-    channel_new = ari.channel_new(exten,"ari_app")
+    channel_new = ari.channel_new(exten,ari_app)
     response["channel"] = channel_new["id"].to_s
+    response["status"] = "OK"
+
+    ari.disconnect()
+
+    response
+  end
+
+  def add_channel_to_bridge(channel_id,bridge_id)
+    response = {"status"=>"","channel"=>"", "message"=>""}
+    ari = connect()
 
     # Dials that channel
-    channel_dial = ari.channel_dial(channel_new["id"])
+    channel_dial = ari.channel_dial(channel_id)
     response["status"] = channel_dial["status"].to_s
     response["message"] = channel_dial["message"].to_s
 
     if channel_dial["status"] == "OK"
       # Adds channel to bridge
-      channel_to_bridge = ari.bridge_add_channel(bridge_id,channel_new["id"])
+      channel_to_bridge = ari.bridge_add_channel(bridge_id,channel_id)
     end
 
     ari.disconnect()
