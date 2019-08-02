@@ -44,12 +44,12 @@ module Asterisk
     response
   end
   
-  def create_new_channel(exten,ari_app="ari_app")
+  def create_new_channel(exten)
     response = {"status"=>"","channel"=>"", "message"=>""}
     ari = connect()
 
     # Creates a new channel
-    channel_new = ari.channel_new(exten,ari_app)
+    channel_new = ari.channel_new(exten,@@ari_app)
     response["channel"] = channel_new["id"].to_s
     response["status"] = "OK"
 
@@ -85,7 +85,7 @@ module Asterisk
     response["bridge"] = bridge_new["id"].to_s
 
     # Creates a new channel
-    channel_new = ari.channel_new(exten,"ari_app")
+    channel_new = ari.channel_new(exten,@@ari_app)
     response["channel"] = channel_new["id"].to_s
 
     # Dials that channel
