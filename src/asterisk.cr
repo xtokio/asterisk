@@ -86,6 +86,29 @@ module Asterisk
     response
   end
 
+  def phone_dial(exten,bridge_id)
+    response = {"status"=>"", "bridge"=>"", "channel"=>"", "message"=>""}
+    ari = connect()
+
+    # Creates a new channel
+    channel_new = ari.channel_new(exten,@@ari_app)
+    response["channel"] = channel_new["id"].to_s
+
+    # Dials that channel
+    channel_dial = ari.channel_dial(channel_new["id"])
+    response["status"] = channel_dial["status"].to_s
+    response["message"] = channel_dial["message"].to_s
+
+    if channel_dial["status"] == "OK"
+      # Adds channel to bridge
+      channel_to_bridge = ari.bridge_add_channel(bridge_id,channel_new["id"])
+      # channel_play = ari.channel_play(channel_new["id"],"sound:confbridge-only-participant") #tt-monkeys
+    end
+
+    ari.disconnect()
+    response
+  end
+
   def phone_login(exten)
     response = {"status"=>"", "bridge"=>"", "channel"=>"", "message"=>""}
     ari = connect()
