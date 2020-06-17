@@ -295,7 +295,7 @@ module Asterisk
         # Run websocket to get events from Asterisk
         @ws_asterisk.on_message do |message|
           @channel_message.send message
-          logger.debug "======== Websocket Message =========\n#{message}"
+          logger.debug {"======== Websocket Message =========\n#{message}"}
         end
         @ws_asterisk.run
       end

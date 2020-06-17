@@ -1,11 +1,11 @@
-require "logger"
+require "log"
 
 module Asterisk
-  LOGGER = Logger.new(STDERR)
-  LOGGER.level = Logger::DEBUG
+  backend = Log::IOBackend.new
+  Log.builder.bind "*", :debug, backend
 
   def self.logger
-    LOGGER
+    Log
   end
 end
 
