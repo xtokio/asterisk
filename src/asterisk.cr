@@ -102,7 +102,7 @@ module Asterisk
     if channel_dial["status"] == "OK"
       # Adds channel to bridge
       channel_to_bridge = ari.bridge_add_channel(bridge_id,channel_new["id"])
-      # channel_play = ari.channel_play(channel_new["id"],"sound:confbridge-only-participant") #tt-monkeys
+      channel_play = ari.channel_play(channel_new["id"],"sound:beep") #tt-monkeys
     end
 
     ari.disconnect()
