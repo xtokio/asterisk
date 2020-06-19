@@ -278,6 +278,18 @@ module Asterisk
       {"code"=>code,"message"=>json}
     end
 
+    # Plays media on bridge
+    def bridge_play(bridge_id,media)
+      response = @client.post("/ari/bridges/#{bridge_id}/play?media=#{media}")
+      code = response.status_code
+      json = response.body
+      if code = 201
+        json = "Media #{media} was queued"
+      end
+
+      {"code"=>code,"message"=>json}
+    end
+
     # Add channel to bridge
     def bridge_add_channel(bridge_id,channel_id)
       response = @client.post("/ari/bridges/#{bridge_id}/addChannel?channel=#{channel_id}")
